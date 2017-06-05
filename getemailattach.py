@@ -3,12 +3,18 @@ import email
 import os
 
 if len(sys.argv) < 2:
-	print 'getemailattach.py <SOURCE_MIME_PATH> [<DESTINATION_FOLDER_PATH>] [-d]'
+	print 'Usage:'
+	print 'getemailattach.py <SOURCE_MIME_PATH> [<OUTPUT_FOLDER_PATH>] [-d]'
+	print 'Parameters:'
+	print '<SOURCE_MIME_PATH>\tRequired, support a file path or a folder path.'
+	print '<OUTPUT_FOLDER_PATH>\tOptional, default value is the current path.'
+	print '-d\t\t\tDelete source MIME files after completed.'
 	quit()
 
 arrSrcFile = []
 destFolder = ''
 ifDelete = False
+successCount = 0
 srcMIME = sys.argv[1]
 if len(sys.argv) > 2:
 	if sys.argv[2] == '-d':
@@ -38,3 +44,5 @@ for mimeFileItem in arrSrcFile:
 		open(os.path.join(destFolder, attachmentFilename), 'wb').write(attachmentItem.get_payload(decode=True))
 	if ifDelete == True:
 		os.remove(mimeFileItem)
+	successCount+=1
+print(str(len(arrSrcFile)) + ' files found, ' + str(successCount) + ' successfully extracted.')
