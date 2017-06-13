@@ -1,12 +1,13 @@
 # getemailattach.py
-# Version: 2.0
-# Date: 2017-6-9
+# Version: 2.1
+# Date: 2017-6-13
 # By: StoneArk
 # Extract email attachments from MIME.
 
 import sys
 import email
 import os
+import urllib
 
 def parseEmailFiles(arrFiles, destFolder, ifDelete):
 	successCount = 0
@@ -41,6 +42,18 @@ def extractAttachment(mimeMsg, destFolder):
 		open(os.path.join(destFolder, attachmentFilename), 'wb').write(attachmentItem.get_payload(decode=True))
 	return True
 
+def callDataProcessing(destFolder):
+	if destFolder == '':
+		destFolder = os.getcwd()
+	params = urllib.urlencode({"path": destFolder})
+	url = "http://127.0.0.1:8888/attachmentsProcess?%s" % params
+	print 'Open url: ' + url
+	try:
+		resp = urllib.urlopen(url)
+		print 'Response HTTP status code: ' + str(resp.getcode())
+	except IOError as e:
+		print "I/O error({0}): {1}".format(e.errno, e.strerror)
+
 if __name__ == "__main__":
 	if len(sys.argv) < 2:
 		print 'Usage:'
@@ -65,6 +78,7 @@ if __name__ == "__main__":
 		ifSuccess = parseEmailString(strMIME, destFolder)
 		if ifSuccess == True:
 			print('Attachment extracted successfully from stdin.')
+			callDataProcessing(destFolder)
 		else:
 			print('Attachment extracted FAILED from stdin.')
 	else:
@@ -87,3 +101,5 @@ if __name__ == "__main__":
 
 		successCount = parseEmailFiles(arrSrcFile, destFolder, ifDelete)
 		print(str(len(arrSrcFile)) + ' files found, ' + str(successCount) + ' successfully extracted.')
+		if successCount > 0:
+			callDataProcessing(destFolder)
