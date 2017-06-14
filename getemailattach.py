@@ -10,12 +10,18 @@ import os
 import urllib
 import datetime
 
+# Place text that the email subject must contain here, or just leave it empty.
+subjectFlag = ''
+
 def parseEmailFiles(arrFiles, destFolder, ifDelete):
 	successCount = 0
 	for mimeFileItem in arrFiles:
 		mimeMsg = email.message_from_file(open(mimeFileItem))
 		if mimeMsg.is_multipart() == False:
 			print('Unable to load file: ' + mimeFileItem)
+			continue
+		if subjectFlag not in mimeMsg['Subject']:
+			print('Subject not match: ' + mimeMsg['Subject'] + ', in ' + mimeFileItem)
 			continue
 		extractSuccess = extractAttachment(mimeMsg, destFolder)
 		if extractSuccess == True:
@@ -28,6 +34,9 @@ def parseEmailString(strMIME, destFolder):
 	mimeMsg = email.message_from_string(strMIME)
 	if mimeMsg.is_multipart() == False:
 		print('Unable to load email content')
+		return False
+	if subjectFlag not in mimeMsg['Subject']:
+		print('Subject not match: ' + mimeMsg['Subject'])
 		return False
 	extractSuccess = extractAttachment(mimeMsg, destFolder)
 	return extractSuccess
