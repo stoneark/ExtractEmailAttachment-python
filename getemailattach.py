@@ -1,13 +1,14 @@
 # getemailattach.py
-# Version: 2.1
-# Date: 2017-6-13
+# Version: 2.2
+# Date: 2017-6-14
 # By: StoneArk
-# Extract email attachments from MIME.
+# Extract email body from MIME.
 
 import sys
 import email
 import os
 import urllib
+import datetime
 
 def parseEmailFiles(arrFiles, destFolder, ifDelete):
 	successCount = 0
@@ -33,13 +34,12 @@ def parseEmailString(strMIME, destFolder):
 
 def extractAttachment(mimeMsg, destFolder):
 	attachmentCount = len(mimeMsg.get_payload())
-	if attachmentCount < 2:
-		print('No attachment found in this email: ' + mimeFileItem)
+	if attachmentCount < 1:
+		print('Body not found in this email.')
 		return False
-	for i in range(1, attachmentCount):
-		attachmentItem = mimeMsg.get_payload()[i]
-		attachmentFilename = attachmentItem.get_filename()
-		open(os.path.join(destFolder, attachmentFilename), 'wb').write(attachmentItem.get_payload(decode=True))
+	mailBody = mimeMsg.get_payload()[0]
+	attachmentFilename = 'mail_' + str(datetime.datetime.now())
+	open(os.path.join(destFolder, attachmentFilename), 'wb').write(mailBody.get_payload(decode=True))
 	return True
 
 def callDataProcessing(destFolder):
