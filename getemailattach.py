@@ -1,6 +1,6 @@
 # getemailattach.py
-# Version: 2.3
-# Date: 2017-6-20
+# Version: 2.4
+# Date: 2017-6-21
 # By: StoneArk
 # Extract email body from MIME.
 
@@ -44,14 +44,26 @@ def extractAttachment(mimeMsg, destFolder):
 		mailBody = mimeMsg.get_payload()[0].get_payload(decode=True)
 	else:
 		mailBody = mimeMsg.get_payload(decode=True)
+	mailBody = mailBody.replace('<br/>','\n')
 	attachmentFilename = 'mail_' + str(datetime.datetime.now())
 	open(os.path.join(destFolder, attachmentFilename), 'wb').write(mailBody)
+	callDataProcessingWithContent(mailBody)
 	return True
 
 def callDataProcessing(destFolder):
 	if destFolder == '':
 		destFolder = os.getcwd()
 	params = urllib.urlencode({"path": destFolder})
+	url = "http://127.0.0.1:8888/attachmentsProcess?%s" % params
+	print 'Open url: ' + url
+	try:
+		resp = urllib.urlopen(url)
+		print 'Response HTTP status code: ' + str(resp.getcode())
+	except IOError as e:
+		print "I/O error({0}): {1}".format(e.errno, e.strerror)
+
+def callDataProcessingWithContent(content):
+	params = urllib.urlencode({"content": content})
 	url = "http://127.0.0.1:8888/attachmentsProcess?%s" % params
 	print 'Open url: ' + url
 	try:
@@ -107,5 +119,5 @@ if __name__ == "__main__":
 
 		successCount = parseEmailFiles(arrSrcFile, destFolder, ifDelete)
 		print(str(len(arrSrcFile)) + ' files found, ' + str(successCount) + ' successfully extracted.')
-		if successCount > 0:
-			callDataProcessing(destFolder)
+		# if successCount > 0:
+		# 	callDataProcessing(destFolder)
