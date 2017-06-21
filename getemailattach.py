@@ -1,6 +1,6 @@
 # getemailattach.py
-# Version: 2.2
-# Date: 2017-6-14
+# Version: 2.3
+# Date: 2017-6-20
 # By: StoneArk
 # Extract email body from MIME.
 
@@ -17,12 +17,9 @@ def parseEmailFiles(arrFiles, destFolder, ifDelete):
 	successCount = 0
 	for mimeFileItem in arrFiles:
 		mimeMsg = email.message_from_file(open(mimeFileItem))
-		if mimeMsg.is_multipart() == False:
-			print('Unable to load file: ' + mimeFileItem)
-			continue
-		if subjectFlag not in mimeMsg['Subject']:
-			print('Subject not match: ' + mimeMsg['Subject'] + ', in ' + mimeFileItem)
-			continue
+		# if subjectFlag not in mimeMsg['Subject']:
+		# 	print('Subject not match: ' + mimeMsg['Subject'] + ', in ' + mimeFileItem)
+		# 	continue
 		extractSuccess = extractAttachment(mimeMsg, destFolder)
 		if extractSuccess == True:
 			successCount+=1
@@ -32,23 +29,23 @@ def parseEmailFiles(arrFiles, destFolder, ifDelete):
 
 def parseEmailString(strMIME, destFolder):
 	mimeMsg = email.message_from_string(strMIME)
-	if mimeMsg.is_multipart() == False:
-		print('Unable to load email content')
-		return False
-	if subjectFlag not in mimeMsg['Subject']:
-		print('Subject not match: ' + mimeMsg['Subject'])
-		return False
+	# if subjectFlag not in mimeMsg['Subject']:
+	# 	print('Subject not match: ' + mimeMsg['Subject'])
+	# 	return False
 	extractSuccess = extractAttachment(mimeMsg, destFolder)
 	return extractSuccess
 
 def extractAttachment(mimeMsg, destFolder):
-	attachmentCount = len(mimeMsg.get_payload())
-	if attachmentCount < 1:
-		print('Body not found in this email.')
-		return False
-	mailBody = mimeMsg.get_payload()[0]
+	if mimeMsg.is_multipart() == True:
+		attachmentCount = len(mimeMsg.get_payload())
+		if attachmentCount < 1:
+			print('Body not found in this email.')
+			return False
+		mailBody = mimeMsg.get_payload()[0].get_payload(decode=True)
+	else:
+		mailBody = mimeMsg.get_payload(decode=True)
 	attachmentFilename = 'mail_' + str(datetime.datetime.now())
-	open(os.path.join(destFolder, attachmentFilename), 'wb').write(mailBody.get_payload(decode=True))
+	open(os.path.join(destFolder, attachmentFilename), 'wb').write(mailBody)
 	return True
 
 def callDataProcessing(destFolder):
